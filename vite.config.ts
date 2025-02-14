@@ -6,10 +6,10 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   build: {
-    outDir: 'docs'
+    outDir: 'dist',
+    sourcemap: true
   },
-  // @ts-ignore
-  base: process.env.GH_PAGES ? '/demo-dapp-with-wallet/' : './',
+  base: './',
   server: {
     fs: {
       allow: ['../sdk', './'],
