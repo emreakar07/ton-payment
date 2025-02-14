@@ -4,12 +4,22 @@ import {THEME, TonConnectUIProvider} from "@tonconnect/ui-react";
 import {Footer} from "./components/Footer/Footer";
 import {Header} from "./components/Header/Header";
 import {TxForm} from "./components/TxForm/TxForm";
+import WebApp from '@twa-dev/sdk';
+
+// Telegram WebApp'i başlat
+WebApp.ready();
+
+// Tema rengini Telegram'dan al
+const tgTheme = WebApp.colorScheme === 'dark' ? THEME.DARK : THEME.LIGHT;
 
 function App() {
   return (
     <TonConnectUIProvider
-      manifestUrl="https://ton-connect.github.io/demo-dapp-with-wallet/tonconnect-manifest.json"
-      uiPreferences={{theme: THEME.DARK}}
+      manifestUrl="https://your-domain.com/tonconnect-manifest.json"
+      uiPreferences={{
+        theme: tgTheme,
+        borderRadius: 's'
+      }}
       walletsListConfiguration={{
         includeWallets: [
           {
@@ -215,10 +225,10 @@ function App() {
         ]
       }}
       actionsConfiguration={{
-        twaReturnUrl: 'https://t.me/tc_twa_demo_bot/start'
+        twaReturnUrl: 'https://t.me/your_bot_username/start'
       }}
     >
-      <div className="app">
+      <div className="app" style={{backgroundColor: WebApp.backgroundColor}}>
         <Header/>
         <TxForm/>
         {/*<TonProofDemo />*/}

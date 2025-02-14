@@ -4,10 +4,11 @@ const logEvent = (scope: string): (event: Event) => void => {
   scope = scope.startsWith('ton-connect-ui-') ? 'TonConnectUI' : 'TonConnect';
 
   return (event: Event): void => {
-    if (!(event instanceof CustomEvent<UserActionEvent | SdkActionEvent>)) {
+    if (!('detail' in event)) {
       return;
     }
-    const detail: UserActionEvent | SdkActionEvent = event.detail;
+    const customEvent = event as CustomEvent<UserActionEvent | SdkActionEvent>;
+    const detail = customEvent.detail;
     console.log(`${scope} Event: ${detail.type}`, detail);
   }
 };
