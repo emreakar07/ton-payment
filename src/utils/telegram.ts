@@ -1,3 +1,20 @@
+import WebApp from '@twa-dev/sdk';
+
+// WebApp tipini genişletmek yerine yeni bir tip tanımlayalım
+interface TelegramTheme {
+  backgroundColor: string;
+  textColor: string;
+  buttonColor: string;
+  buttonTextColor: string;
+}
+
+// vite-env.d.ts ile çakışmayı önlemek için
+declare global {
+  var Telegram: {
+    WebApp: WebApp & Partial<TelegramTheme>;
+  }
+}
+
 export const validateTelegramWebAppData = (initData: string) => {
   try {
     const urlParams = new URLSearchParams(initData);
@@ -25,5 +42,35 @@ export const validateTelegramWebAppData = (initData: string) => {
 };
 
 export const isTelegramWebApp = () => {
-  return window.Telegram?.WebApp != null;
+  return typeof window !== 'undefined' && 'Telegram' in window && 'WebApp' in window.Telegram;
+};
+
+export const initTelegramWebApp = () => {
+  if (!isTelegramWebApp()) {
+    console.warn('Telegram WebApp is not available');
+    return;
+  }
+
+  // WebApp'i hazır hale getir
+  WebApp.ready();
+
+  // Main button'u ayarla
+  WebApp.MainButton.setText('CONNECT WALLET');
+  WebApp.MainButton.show();
+  WebApp.MainButton.enable();
+
+  // Tema renklerini ayarla
+  const tg = window.Telegram.WebApp;
+  
+  // CSS değişkenlerini güvenli bir şekilde ayarla
+  const setThemeProperty = (prop: string, value: string | undefined) => {
+    if (value) {
+      document.documentElement.style.setProperty(prop, value);
+    }
+  };
+
+  setThemeProperty('--tg-theme-bg-color', tg.backgroundColor);
+  setThemeProperty('--tg-theme-text-color', tg.textColor);
+  setThemeProperty('--tg-theme-button-color', tg.buttonColor);
+  setThemeProperty('--tg-theme-button-text-color', tg.buttonTextColor);
 }; 

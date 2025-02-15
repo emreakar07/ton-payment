@@ -5,6 +5,7 @@ import {Footer} from "./components/Footer/Footer";
 import {Header} from "./components/Header/Header";
 import {TxForm} from "./components/TxForm/TxForm";
 import WebApp from '@twa-dev/sdk';
+import { useEffect } from 'react';
 
 // Telegram WebApp'i başlat
 WebApp.ready();
@@ -13,6 +14,11 @@ WebApp.ready();
 const tgTheme = WebApp.colorScheme === 'dark' ? THEME.DARK : THEME.LIGHT;
 
 function App() {
+  useEffect(() => {
+    // Mini App'i başlat
+    WebApp.ready();
+  }, []);
+
   return (
     <TonConnectUIProvider
       manifestUrl="/tonconnect-manifest.json"

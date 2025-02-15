@@ -187,3 +187,13 @@ declare module '@twa-dev/sdk' {
   const WebApp: WebApp;
   export default WebApp;
 }
+
+// Telegram WebApp tiplerini ekle
+interface ImportMetaEnv {
+  readonly VITE_TELEGRAM_BOT_USERNAME: string;
+  readonly VITE_APP_URL: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}

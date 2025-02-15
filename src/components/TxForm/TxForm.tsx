@@ -2,6 +2,8 @@ import React, {useCallback, useEffect, useState} from 'react';
 import './style.scss';
 import {SendTransactionRequest, useTonConnectUI, useTonWallet} from "@tonconnect/ui-react";
 import WebApp from '@twa-dev/sdk';
+import { initTelegramWebApp } from '../../utils/telegram';
+import { validatePaymentData } from '../../utils/validation';
 
 interface PaymentData {
 	amount: string;
@@ -23,90 +25,81 @@ const defaultTx: SendTransactionRequest = {
 	],
 };
 
-export function TxForm() {
+export const TxForm: React.FC = () => {
 	const [tx, setTx] = useState<SendTransactionRequest>(defaultTx);
 	const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
 	const wallet = useTonWallet();
-	const [tonConnectUi] = useTonConnectUI();
+	const [tonConnectUI] = useTonConnectUI();
 
-	// URL'den payment_data parametresini al
 	useEffect(() => {
+		initTelegramWebApp();
+		
+		// URL'den payment_data parametresini al
 		try {
 			const urlParams = new URLSearchParams(window.location.search);
 			const paymentDataStr = urlParams.get('payment_data');
 			
 			if (paymentDataStr) {
-				// Base64 decode ve JSON parse
-				const paymentData = JSON.parse(atob(paymentDataStr));
-				
-				setTx(prev => ({
-					...prev,
-					messages: [{
-						address: paymentData.address,
-						amount: paymentData.amount,
-					}]
-				}));
+				const data = JSON.parse(atob(paymentDataStr));
+				if (validatePaymentData(data)) {
+					setPaymentData(data);
+					setTx(prev => ({
+						...prev,
+						messages: [{
+							address: data.address,
+							amount: data.amount,
+						}]
+					}));
+
+					WebApp.MainButton.setText(`PAY ${data.amount} TON`);
+					WebApp.MainButton.show();
+				}
 			}
 		} catch (e) {
 			console.error('Error parsing payment data:', e);
+			WebApp.showPopup({
+				title: 'Error',
+				message: 'Invalid payment parameters',
+				buttons: [{type: 'close'}]
+			});
 		}
 	}, []);
 
-	const handleTransaction = useCallback(async () => {
-		if (!wallet) {
-			WebApp.showPopup({
-				title: 'Connect Wallet',
-				message: 'Please connect your wallet first',
-				buttons: [{type: 'ok'}]
-			});
-			return;
+	// Cüzdan bağlantı durumunu kontrol et
+	useEffect(() => {
+		const isConnected = tonConnectUI.connected;
+		if (isConnected) {
+			WebApp.MainButton.setText('SEND TRANSACTION');
+			WebApp.MainButton.onClick(handleTransaction);
+		} else {
+			WebApp.MainButton.setText('CONNECT WALLET');
+			WebApp.MainButton.onClick(() => tonConnectUI.openModal());
 		}
 
-		if (!paymentData || !tx.messages[0].address || !tx.messages[0].amount) {
-			WebApp.showPopup({
-				title: 'Error',
-				message: 'Invalid payment data',
-				buttons: [{type: 'ok'}]
-			});
-			return;
-		}
+		return () => {
+			WebApp.MainButton.offClick();
+		};
+	}, [tonConnectUI.connected]);
+
+	const handleTransaction = useCallback(async () => {
+		if (!wallet || !paymentData) return;
 
 		try {
 			WebApp.showProgress();
-			await tonConnectUi.sendTransaction(tx);
+			await tonConnectUI.sendTransaction(tx);
 			
-			// İşlem başarılı olduğunda bot'a bilgi gönder
-			WebApp.sendData(JSON.stringify({
-				event: 'payment_success',
-				orderId: paymentData.orderId,
-				transactionAmount: paymentData.amount,
-				walletAddress: wallet.account.address
-			}));
-
-			showSuccess();
-			WebApp.close();
+			// İşlem başarılı
+			WebApp.showPopup({
+				title: 'Success',
+				message: 'Transaction sent successfully',
+				buttons: [{type: 'close'}]
+			});
 		} catch (error) {
 			handleError(error);
 		} finally {
 			WebApp.hideProgress();
 		}
-	}, [wallet, tonConnectUi, tx, paymentData]);
-
-	// Main Button'a tıklama olayını ekle
-	useEffect(() => {
-		if (!wallet) {
-			WebApp.MainButton.setText('CONNECT WALLET');
-			WebApp.MainButton.onClick(() => tonConnectUi.openModal());
-		} else if (paymentData) {
-			WebApp.MainButton.setText(`PAY ${paymentData.amount} TON`);
-			WebApp.MainButton.onClick(handleTransaction);
-		}
-
-		return () => {
-			WebApp.MainButton.offClick();
-			WebApp.MainButton.hide();
-		};
-	}, [wallet, paymentData, handleTransaction]);
+	}, [wallet, tonConnectUI, tx, paymentData]);
 
 	const handleError = (error: any) => {
 		WebApp.showPopup({
@@ -119,29 +112,16 @@ export function TxForm() {
 		});
 	};
 
-	const showSuccess = () => {
-		WebApp.showPopup({
-			title: 'Success',
-			message: 'Payment completed!',
-			buttons: [{
-				type: 'ok',
-				text: 'Done',
-				id: 'success_done'
-			}]
-		});
-	};
-
 	return (
-		<div className="send-tx-form" style={{color: WebApp.textColor}}>
-			<h3>Payment Details</h3>
+		<div className="tx-form">
 			{paymentData && (
 				<div className="payment-details">
 					<p>Product: {paymentData.productName}</p>
 					<p>Amount: {paymentData.amount} TON</p>
 					<p>Order ID: {paymentData.orderId}</p>
-					<p className="address">To: {paymentData.address}</p>
+					<p>To: {paymentData.address}</p>
 				</div>
 			)}
 		</div>
 	);
-}
+};
