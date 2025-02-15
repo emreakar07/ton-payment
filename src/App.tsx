@@ -225,7 +225,7 @@ function App() {
         ]
       }}
       actionsConfiguration={{
-        twaReturnUrl: `https://t.me/${process.env.VITE_TELEGRAM_BOT_USERNAME}/app`,
+        twaReturnUrl: `https://t.me/${import.meta.env.VITE_TELEGRAM_BOT_USERNAME}/app`,
         skipRedirectToWallet: 'always',
         returnStrategy: 'back'
       }}

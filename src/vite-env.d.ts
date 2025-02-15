@@ -111,7 +111,7 @@ declare module '@twa-dev/sdk' {
       hide: () => void;
       setText: (text: string) => void;
       onClick: (callback: () => void) => void;
-      offClick: (callback: () => void) => void;
+      offClick: (callback?: () => void) => void;
       enable: () => void;
       disable: () => void;
     };
@@ -179,6 +179,9 @@ declare module '@twa-dev/sdk' {
       removeItems: (keys: string[]) => Promise<void>;
       clear: () => Promise<void>;
     };
+
+    sendData: (data: any) => void;
+    offClick: () => void;
   }
 
   const WebApp: WebApp;

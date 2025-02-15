@@ -15,4 +15,7 @@ export default defineConfig({
       allow: ['../sdk', './'],
     },
   },
+  define: {
+    'process.env': {}
+  }
 })
