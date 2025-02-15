@@ -15,7 +15,7 @@ const tgTheme = WebApp.colorScheme === 'dark' ? THEME.DARK : THEME.LIGHT;
 function App() {
   return (
     <TonConnectUIProvider
-      manifestUrl="https://your-domain.com/tonconnect-manifest.json"
+      manifestUrl="/tonconnect-manifest.json"
       uiPreferences={{
         theme: tgTheme,
         borderRadius: 's'
@@ -24,11 +24,11 @@ function App() {
         includeWallets: [
           {
             appName: "telegram-wallet",
-            name: "Wallet",
+            name: "Telegram Wallet",
             imageUrl: "https://wallet.tg/images/logo-288.png",
             aboutUrl: "https://wallet.tg/",
-            universalLink: "https://t.me/wallet?attach=wallet",
-            bridgeUrl: "https://bridge.ton.space/bridge",
+            universalLink: "https://t.me/wallet",
+            bridgeUrl: "https://bridge.ton.org",
             platforms: ["ios", "android", "macos", "windows", "linux"]
           },
           {
@@ -225,7 +225,9 @@ function App() {
         ]
       }}
       actionsConfiguration={{
-        twaReturnUrl: 'https://t.me/your_bot_username/start'
+        twaReturnUrl: `https://t.me/${process.env.VITE_TELEGRAM_BOT_USERNAME}/app`,
+        skipRedirectToWallet: 'always',
+        returnStrategy: 'back'
       }}
     >
       <div className="app" style={{backgroundColor: WebApp.backgroundColor}}>

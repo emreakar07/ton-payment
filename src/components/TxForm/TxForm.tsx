@@ -1,16 +1,13 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import ReactJson from 'react-json-view';
 import './style.scss';
 import {SendTransactionRequest, useTonConnectUI, useTonWallet} from "@tonconnect/ui-react";
 import WebApp from '@twa-dev/sdk';
 
-// In this example, we are using a predefined smart contract state initialization (`stateInit`)
-// to interact with an "EchoContract". This contract is designed to send the value back to the sender,
-// serving as a testing tool to prevent users from accidentally spending money.
-
-interface SendParameters {
-	address: string;
+interface PaymentData {
 	amount: string;
+	address: string;
+	orderId: string;
+	productName: string;
 }
 
 const defaultTx: SendTransactionRequest = {
@@ -22,51 +19,44 @@ const defaultTx: SendTransactionRequest = {
 			address: '',
 			// Amount to send in nanoTON. For example, 0.005 TON is 5000000 nanoTON.
 			amount: '0',
-			// (optional) State initialization in boc base64 format.
-			stateInit: 'te6cckEBBAEAOgACATQCAQAAART/APSkE/S88sgLAwBI0wHQ0wMBcbCRW+D6QDBwgBDIywVYzxYh+gLLagHPFsmAQPsAlxCarA==',
-			// (optional) Payload in boc base64 format.
-			payload: 'te6ccsEBAQEADAAMABQAAAAASGVsbG8hCaTc/g==',
 		},
-
-		// Uncomment the following message to send two messages in one transaction.
-		/*
-    {
-      // Note: Funds sent to this address will not be returned back to the sender.
-      address: 'UQAuz15H1ZHrZ_psVrAra7HealMIVeFq0wguqlmFno1f3B-m',
-      amount: toNano('0.01').toString(),
-    }
-    */
-
 	],
 };
 
 export function TxForm() {
 	const [tx, setTx] = useState<SendTransactionRequest>(defaultTx);
+	const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
 	const wallet = useTonWallet();
 	const [tonConnectUi] = useTonConnectUI();
 
-	// Telegram WebApp'den parametreleri al
+	// URL'den payment data'yı parse et
 	useEffect(() => {
 		try {
-			// WebApp.initDataUnsafe.start_param formatı: "address_amount"
-			// Örnek: "EQB...123_5000000"
 			const startParam = WebApp.initDataUnsafe.start_param;
 			if (startParam) {
-				const [address, amount] = startParam.split('_');
+				// Base64'ten decode et
+				const decodedData = atob(startParam);
+				const data: PaymentData = JSON.parse(decodedData);
+				
+				setPaymentData(data);
+				
+				// TON miktarını nanoTON'a çevir (1 TON = 1_000_000_000 nanoTON)
+				const amountInNano = Math.floor(parseFloat(data.amount) * 1_000_000_000).toString();
 				
 				setTx(prev => ({
 					...prev,
 					messages: [{
-						address,
-						amount,
+						address: data.address,
+						amount: amountInNano
 					}]
 				}));
 
 				// Main Button'u güncelle
-				WebApp.MainButton.setText(`SEND ${Number(amount) / 1e9} TON`);
+				WebApp.MainButton.setText(`PAY ${data.amount} TON`);
+				WebApp.MainButton.show();
 			}
 		} catch (e) {
-			console.error('Error parsing start parameters:', e);
+			console.error('Error parsing payment data:', e);
 			WebApp.showPopup({
 				title: 'Error',
 				message: 'Invalid payment parameters',
@@ -85,10 +75,10 @@ export function TxForm() {
 			return;
 		}
 
-		if (!tx.messages[0].address || !tx.messages[0].amount) {
+		if (!paymentData || !tx.messages[0].address || !tx.messages[0].amount) {
 			WebApp.showPopup({
 				title: 'Error',
-				message: 'Invalid transaction parameters',
+				message: 'Invalid payment data',
 				buttons: [{type: 'ok'}]
 			});
 			return;
@@ -98,53 +88,73 @@ export function TxForm() {
 			WebApp.showProgress();
 			await tonConnectUi.sendTransaction(tx);
 			
-			WebApp.showPopup({
-				title: 'Success',
-				message: 'Transaction sent successfully!',
-				buttons: [{
-					type: 'ok',
-					text: 'Close',
-					id: 'close'
-				}]
-			});
-			
-			// İşlem başarılı olduğunda bot'a bildir
+			// İşlem başarılı olduğunda bot'a bilgi gönder
+			WebApp.sendData(JSON.stringify({
+				event: 'payment_success',
+				orderId: paymentData.orderId,
+				transactionAmount: paymentData.amount,
+				walletAddress: wallet.account.address
+			}));
+
+			showSuccess();
 			WebApp.close();
 		} catch (error) {
-			WebApp.showPopup({
-				title: 'Error',
-				message: 'Transaction failed.',
-				buttons: [{type: 'ok'}]
-			});
+			handleError(error);
 		} finally {
 			WebApp.hideProgress();
 		}
-	}, [wallet, tonConnectUi, tx]);
+	}, [wallet, tonConnectUi, tx, paymentData]);
 
 	// Main Button'a tıklama olayını ekle
 	useEffect(() => {
-		WebApp.MainButton.onClick(handleTransaction);
+		if (!wallet) {
+			WebApp.MainButton.setText('CONNECT WALLET');
+			WebApp.MainButton.onClick(() => tonConnectUi.openModal());
+		} else if (paymentData) {
+			WebApp.MainButton.setText(`PAY ${paymentData.amount} TON`);
+			WebApp.MainButton.onClick(handleTransaction);
+		}
+
 		return () => {
-			WebApp.MainButton.offClick(handleTransaction);
+			WebApp.MainButton.offClick();
+			WebApp.MainButton.hide();
 		};
-	}, [handleTransaction]);
+	}, [wallet, paymentData, handleTransaction]);
+
+	const handleError = (error: any) => {
+		WebApp.showPopup({
+			title: 'Error',
+			message: error.message || 'Transaction failed',
+			buttons: [{
+				type: 'destructive',
+				text: 'Close'
+			}]
+		});
+	};
+
+	const showSuccess = () => {
+		WebApp.showPopup({
+			title: 'Success',
+			message: 'Payment completed!',
+			buttons: [{
+				type: 'ok',
+				text: 'Done',
+				id: 'success_done'
+			}]
+		});
+	};
 
 	return (
 		<div className="send-tx-form" style={{color: WebApp.textColor}}>
 			<h3>Payment Details</h3>
-			<div className="payment-details">
-				<p>Address: {tx.messages[0].address}</p>
-				<p>Amount: {Number(tx.messages[0].amount) / 1e9} TON</p>
-			</div>
-			<button 
-				onClick={handleTransaction}
-				style={{
-					backgroundColor: WebApp.buttonColor,
-					color: WebApp.buttonTextColor
-				}}
-			>
-				Send Transaction
-			</button>
+			{paymentData && (
+				<div className="payment-details">
+					<p>Product: {paymentData.productName}</p>
+					<p>Amount: {paymentData.amount} TON</p>
+					<p>Order ID: {paymentData.orderId}</p>
+					<p className="address">To: {paymentData.address}</p>
+				</div>
+			)}
 		</div>
 	);
 }

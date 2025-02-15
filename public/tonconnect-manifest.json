@@ -1,7 +1,10 @@
 {
-  "url": "https://ton-connect.github.io/demo-dapp-with-wallet/",
-  "name": "Demo Dapp with wallet",
-  "iconUrl": "https://ton-connect.github.io/demo-dapp-with-wallet/apple-touch-icon.png",
-  "termsOfUseUrl": "https://ton-connect.github.io/demo-dapp-with-wallet/terms-of-use.txt",
-  "privacyPolicyUrl": "https://ton-connect.github.io/demo-dapp-with-wallet/privacy-policy.txt"
+  "url": "https://your-mini-app-domain.com",
+  "name": "TON Payment Mini App",
+  "iconUrl": "https://your-mini-app-domain.com/app-icon.png",
+  "termsOfUseUrl": "https://your-mini-app-domain.com/terms.txt",
+  "privacyPolicyUrl": "https://your-mini-app-domain.com/privacy.txt",
+  "telegram_app_url": "https://t.me/your_bot_username/app",
+  "telegram_bot_username": "your_bot_username",
+  "version": "1.0.0"
 }
