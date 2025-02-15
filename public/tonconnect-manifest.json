@@ -6,5 +6,6 @@
   "privacyPolicyUrl": "https://tonpayment.vercel.app/privacy.txt",
   "telegram_app_url": "https://t.me/electronicpinbot/app",
   "telegram_bot_username": "electronicpinbot",
+  "manifest_version": 1,
   "version": "1.0.0"
 }

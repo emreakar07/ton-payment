@@ -29,39 +29,26 @@ export function TxForm() {
 	const wallet = useTonWallet();
 	const [tonConnectUi] = useTonConnectUI();
 
-	// URL'den payment data'yı parse et
+	// URL'den payment_data parametresini al
 	useEffect(() => {
 		try {
-			const startParam = WebApp.initDataUnsafe.start_param;
-			if (startParam) {
-				// Base64'ten decode et
-				const decodedData = atob(startParam);
-				const data: PaymentData = JSON.parse(decodedData);
-				
-				setPaymentData(data);
-				
-				// TON miktarını nanoTON'a çevir (1 TON = 1_000_000_000 nanoTON)
-				const amountInNano = Math.floor(parseFloat(data.amount) * 1_000_000_000).toString();
+			const urlParams = new URLSearchParams(window.location.search);
+			const paymentDataStr = urlParams.get('payment_data');
+			
+			if (paymentDataStr) {
+				// Base64 decode ve JSON parse
+				const paymentData = JSON.parse(atob(paymentDataStr));
 				
 				setTx(prev => ({
 					...prev,
 					messages: [{
-						address: data.address,
-						amount: amountInNano
+						address: paymentData.address,
+						amount: paymentData.amount,
 					}]
 				}));
-
-				// Main Button'u güncelle
-				WebApp.MainButton.setText(`PAY ${data.amount} TON`);
-				WebApp.MainButton.show();
 			}
 		} catch (e) {
 			console.error('Error parsing payment data:', e);
-			WebApp.showPopup({
-				title: 'Error',
-				message: 'Invalid payment parameters',
-				buttons: [{type: 'close'}]
-			});
 		}
 	}, []);
 
