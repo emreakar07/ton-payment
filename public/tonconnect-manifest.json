@@ -1,10 +1,10 @@
 {
-  "url": "https://your-mini-app-domain.com",
+  "url": "https://tonpayment.vercel.app",
   "name": "TON Payment Mini App",
-  "iconUrl": "https://your-mini-app-domain.com/app-icon.png",
-  "termsOfUseUrl": "https://your-mini-app-domain.com/terms.txt",
-  "privacyPolicyUrl": "https://your-mini-app-domain.com/privacy.txt",
-  "telegram_app_url": "https://t.me/your_bot_username/app",
-  "telegram_bot_username": "your_bot_username",
+  "iconUrl": "https://tonpayment.vercel.app/app-icon.png",
+  "termsOfUseUrl": "https://tonpayment.vercel.app/terms.txt",
+  "privacyPolicyUrl": "https://tonpayment.vercel.app/privacy.txt",
+  "telegram_app_url": "https://t.me/electronicpinbot/app",
+  "telegram_bot_username": "electronicpinbot",
   "version": "1.0.0"
 }
