@@ -140,7 +140,6 @@ declare module '@twa-dev/sdk' {
       button_text_color: string;
     };
 
-    // Telegram WebApp'den gelen başlangıç verisi
     initDataUnsafe: {
       query_id?: string;
       user?: {
@@ -167,8 +166,6 @@ declare module '@twa-dev/sdk' {
     };
 
     initData: string;
-
-    // Telegram Mini App özel özellikleri
     platform: string;
     version: string;
     viewportHeight: number;
@@ -182,19 +179,6 @@ declare module '@twa-dev/sdk' {
       removeItems: (keys: string[]) => Promise<void>;
       clear: () => Promise<void>;
     };
-    
-    // Telegram'a özel metodlar
-    expand: () => void;
-    isVersionAtLeast: (version: string) => boolean;
-    setBackgroundColor: (color: string) => void;
-    enableClosingConfirmation: () => void;
-    disableClosingConfirmation: () => void;
-    onEvent: (eventType: string, callback: Function) => void;
-    offEvent: (eventType: string, callback: Function) => void;
-    sendData: (data: any) => void;
-    openLink: (url: string) => void;
-    openTelegramLink: (url: string) => void;
-    openInvoice: (url: string) => void;
   }
 
   const WebApp: WebApp;
