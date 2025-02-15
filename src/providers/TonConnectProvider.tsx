@@ -1,8 +1,13 @@
 import { TonConnectUIProvider } from '@tonconnect/ui-react';
+import { ReactNode } from 'react';
 
-const manifestUrl = 'https://t.me/electronicpinbot/app/tonconnect-manifest.json';
+interface TonConnectProviderProps {
+  children: ReactNode;
+}
 
-export const TonConnectProvider = ({ children }) => {
+const manifestUrl = `${import.meta.env.VITE_APP_URL}/tonconnect-manifest.json`;
+
+export const TonConnectProvider = ({ children }: TonConnectProviderProps) => {
   return (
     <TonConnectUIProvider manifestUrl={manifestUrl}>
       {children}
