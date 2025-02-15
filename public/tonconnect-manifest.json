@@ -1,13 +1,11 @@
 {
-  "url": "https://t.me/electronicpinbot/app",
-  "name": "Electronic Pin Wallet",
-  "iconUrl": "https://t.me/electronicpinbot/app/icon.png",
-  "termsOfUseUrl": "https://t.me/electronicpinbot/app/terms",
-  "privacyPolicyUrl": "https://t.me/electronicpinbot/app/privacy",
+  "url": "https://tonpayment.vercel.app",
+  "name": "TON Payment Mini App",
+  "iconUrl": "https://tonpayment.vercel.app/app-icon.png",
+  "termsOfUseUrl": "https://tonpayment.vercel.app/terms.txt",
+  "privacyPolicyUrl": "https://tonpayment.vercel.app/privacy.txt",
+  "telegram_app_url": "https://t.me/electronicpinbot/app",
+  "telegram_bot_username": "electronicpinbot",
   "manifest_version": 1,
-  "version": "1.0.0",
-  "universalUrl": "https://t.me/electronicpinbot/app",
-  "parameters": {
-    "tgWebAppStartParam": "tonconnect"
-  }
+  "version": "1.0.0"
 }
